@@ -9,6 +9,7 @@ Dependencies:
 - sklearn
 - tensorflow
 - lenskit
+- xlrd
 
 The following datasets were used:
 - Neflix
