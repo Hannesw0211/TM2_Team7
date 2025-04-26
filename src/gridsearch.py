@@ -8,7 +8,7 @@ Created on Mon Jul  5 12:43:26 2021
 import pandas as pd
 import numpy as np
 from lenskit import batch, topn, util
-from lenskit.algorithms import item_knn, user_knn, als, tf
+from lenskit.algorithms import item_knn, user_knn, als
 from lenskit.algorithms import basic, Recommender, funksvd
 from lenskit.crossfold import partition_users, SampleFrac
 from lenskit.metrics.predict import rmse
@@ -42,8 +42,8 @@ def gs(name, parameters, data):
             algo = als.BiasedMF(para)
         elif name == 'SVD':
             algo = funksvd.FunkSVD(para)
-        elif name == 'BPR':
-            algo = tf.BPR(para)
+        # elif name == 'BPR':
+        #     algo = tf.BPR(para)
         #print('Testing' + str(para))
         all_recs = []
         test_data = []
@@ -82,8 +82,8 @@ def gs_rmse(name, parameters, data):
             algo = als.BiasedMF(para)
         elif name == 'SVD':
             algo = funksvd.FunkSVD(para)
-        elif name == 'BPR':
-            algo = tf.BPR(para)
+        # elif name == 'BPR':
+        #     algo = tf.BPR(para)
         #print('Testing' + str(para))
         all_preds = []
         version = str(para)
@@ -112,6 +112,6 @@ def get_algo(name, para):
         algo = funksvd.FunkSVD(para)
     elif name == 'Pop':
         algo = basic.Popular()
-    elif name == 'BPR':
-        algo = tf.BPR(para)
+    # elif name == 'BPR':
+    #     algo = tf.BPR(para)
     return algo
