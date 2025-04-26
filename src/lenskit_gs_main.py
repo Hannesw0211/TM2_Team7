@@ -103,9 +103,10 @@ def main_rmse(dataset):
 
 
 def main(dataset):
-    names = ['Bias', 'II', 'UU', 'BiasedMF', 'SVD', 'Pop']
+    names = ['Bias', 'II', 'UU', 'BiasedMF', 'SVD']
+    # names = ['Bias'] 
     data, start, end = read_dataset(dataset)
-    grid = get_grid(dataset, 'rmse')
+    grid = get_grid(dataset, 'rmse') # grid is always selected from rmse table, normal grid table is not used
     if dataset == 'ML-100k':
         g = data.groupby(pd.Grouper(key='timestamp', freq='M'))
     else:
@@ -153,17 +154,17 @@ def main(dataset):
 if __name__ == "__main__":
     # Dieser Block wird nur ausgeführt, wenn das Skript direkt gestartet wird.
 
-    print("Starte Haupt-Evaluation (NDCG/Recall) für amazon-instantvideo")
-    ergebnisse = main('amazon-instantvideo')
-    print("Starte RMSE-Evaluation (NDCG/Recall) für amazon-instantvideo")
-    ergebnisse2 = main_rmse('amazon-instantvideo')
+    # print("Starte Haupt-Evaluation (NDCG/Recall) für amazon-instantvideo")
+    # ergebnisse = main('amazon-instantvideo')
+    # print("Starte RMSE-Evaluation (NDCG/Recall) für amazon-instantvideo")
+    # ergebnisse2 = main_rmse('amazon-instantvideo')
 
     # print("Starte Haupt-Evaluation (NDCG/Recall) für amazon-electronics")
     # ergebnisse = main('amazon-electronics')
     # print("Starte RMSE-Evaluation (NDCG/Recall) für amazon-electronics")
     # ergebnisse2 = main_rmse('amazon-electronics')
 
-    # print("Starte Haupt-Evaluation (NDCG/Recall) für MovieLens 1M")
-    # ergebnisse = main('ML-1M')
-    # print("Starte RMSE-Evaluation (NDCG/Recall) für MovieLens 1M")
-    # ergebnisse2 = main_rmse('ML-1M')
+    print("Starte Haupt-Evaluation (NDCG/Recall) für MovieLens 1M")
+    ergebnisse = main('ML-1M')
+    print("Starte RMSE-Evaluation (NDCG/Recall) für MovieLens 1M")
+    ergebnisse2 = main_rmse('ML-1M')
