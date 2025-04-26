@@ -78,7 +78,7 @@ def read_dataset(name, frac=None):
         end = 2014
     
     elif name == 'amazon-electronics':
-        data = pd.read_table(r"..\Datasets\Amazon\ratings_Electronics.csv",
+        data = pd.read_table(r"..\Datasets\Amazon\ratings_Amazon_Electronics.csv",
                      sep=',', header = 0, names=['user', 'item', 'rating', 'timestamp'], engine='python') 
         data['user'] = data.groupby(['user']).ngroup()
         data['item'] = data.groupby(['item']).ngroup()

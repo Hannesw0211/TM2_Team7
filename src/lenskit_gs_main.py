@@ -153,8 +153,17 @@ def main(dataset):
 if __name__ == "__main__":
     # Dieser Block wird nur ausgeführt, wenn das Skript direkt gestartet wird.
 
-    print("Starte Haupt-Evaluation (NDCG/Recall) für amazon-...")
-    #ergebnisse = main('amazon-electronics')
+    print("Starte Haupt-Evaluation (NDCG/Recall) für amazon-instantvideo")
     ergebnisse = main('amazon-instantvideo')
-    print("Starte RMSE-Evaluation (NDCG/Recall) für amazon-...")
+    print("Starte RMSE-Evaluation (NDCG/Recall) für amazon-instantvideo")
     ergebnisse2 = main_rmse('amazon-instantvideo')
+
+    # print("Starte Haupt-Evaluation (NDCG/Recall) für amazon-electronics")
+    # ergebnisse = main('amazon-electronics')
+    # print("Starte RMSE-Evaluation (NDCG/Recall) für amazon-electronics")
+    # ergebnisse2 = main_rmse('amazon-electronics')
+
+    # print("Starte Haupt-Evaluation (NDCG/Recall) für MovieLens 1M")
+    # ergebnisse = main('ML-1M')
+    # print("Starte RMSE-Evaluation (NDCG/Recall) für MovieLens 1M")
+    # ergebnisse2 = main_rmse('ML-1M')
