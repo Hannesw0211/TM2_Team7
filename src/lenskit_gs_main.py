@@ -56,7 +56,7 @@ def final_plot(results, metric, algos, start, end, steps, dataset):
 
 
 def main_rmse(dataset):
-    names = ['Bias', 'II', 'UU', 'BiasedMF', 'SVD', 'Pop']
+    names = ['Bias']
     data, start, end = read_dataset(dataset)
     grid = get_grid(dataset, 'rmse')
     if dataset == 'ML-100k':
@@ -70,7 +70,7 @@ def main_rmse(dataset):
     for df in splits:
         new_df = pd.merge(new_df, df, how='outer')
         new_df = new_df.groupby("user").filter(lambda grp: len(grp) > 2)
-        if new_df.shape[0] > 80000:
+        if new_df.shape[0] > 500:
             i += 1
             print('set ', i)
             tp, tp2 = partition_users(new_df, 2, method=LastFrac(0.2, col='timestamp'))
@@ -156,15 +156,15 @@ if __name__ == "__main__":
 
     # print("Starte Haupt-Evaluation (NDCG/Recall) für amazon-instantvideo")
     # ergebnisse = main('amazon-instantvideo')
-    # print("Starte RMSE-Evaluation (NDCG/Recall) für amazon-instantvideo")
-    # ergebnisse2 = main_rmse('amazon-instantvideo')
+    print("Starte RMSE-Evaluation (NDCG/Recall) für amazon-instantvideo")
+    ergebnisse2 = main_rmse('amazon-instantvideo')
 
     # print("Starte Haupt-Evaluation (NDCG/Recall) für amazon-electronics")
     # ergebnisse = main('amazon-electronics')
     # print("Starte RMSE-Evaluation (NDCG/Recall) für amazon-electronics")
     # ergebnisse2 = main_rmse('amazon-electronics')
 
-    print("Starte Haupt-Evaluation (NDCG/Recall) für MovieLens 1M")
-    ergebnisse = main('ML-1M')
-    print("Starte RMSE-Evaluation (NDCG/Recall) für MovieLens 1M")
-    ergebnisse2 = main_rmse('ML-1M')
+    # print("Starte Haupt-Evaluation (NDCG/Recall) für MovieLens 1M")
+    # ergebnisse = main('ML-1M')
+    # print("Starte RMSE-Evaluation (NDCG/Recall) für MovieLens 1M")
+    # ergebnisse2 = main_rmse('ML-1M')
