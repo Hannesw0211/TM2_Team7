@@ -56,7 +56,7 @@ def final_plot(results, metric, algos, start, end, steps, dataset):
 
 
 def main_rmse(dataset):
-    names = ['Bias']
+    names = ['Bias', 'II', 'UU', 'BiasedMF', 'SVD', 'Pop']
     data, start, end = read_dataset(dataset)
     grid = get_grid(dataset, 'rmse')
     if dataset == 'ML-100k':
@@ -156,15 +156,15 @@ if __name__ == "__main__":
 
     # print("Starte Haupt-Evaluation (NDCG/Recall) für amazon-instantvideo")
     # ergebnisse = main('amazon-instantvideo')
-    print("Starte RMSE-Evaluation (NDCG/Recall) für amazon-instantvideo")
-    ergebnisse2 = main_rmse('amazon-instantvideo')
+    # print("Starte RMSE-Evaluation für amazon-instantvideo")
+    # ergebnisse2 = main_rmse('amazon-instantvideo')
 
     # print("Starte Haupt-Evaluation (NDCG/Recall) für amazon-electronics")
     # ergebnisse = main('amazon-electronics')
-    # print("Starte RMSE-Evaluation (NDCG/Recall) für amazon-electronics")
+    # print("Starte RMSE-Evaluation für amazon-electronics")
     # ergebnisse2 = main_rmse('amazon-electronics')
 
-    # print("Starte Haupt-Evaluation (NDCG/Recall) für MovieLens 1M")
-    # ergebnisse = main('ML-1M')
-    # print("Starte RMSE-Evaluation (NDCG/Recall) für MovieLens 1M")
-    # ergebnisse2 = main_rmse('ML-1M')
+    #print("Starte Haupt-Evaluation (NDCG/Recall) für MovieLens 1M")
+    #ergebnisse = main('ML-1M')
+    #print("Starte RMSE-Evaluation für MovieLens 1M")
+    #ergebnisse2 = main_rmse('ML-1M')
