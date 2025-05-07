@@ -103,10 +103,10 @@ def main_rmse(dataset):
 
 
 def main(dataset):
-    names = ['Bias', 'II', 'UU', 'BiasedMF', 'SVD']
+    names = ['Bias', 'II', 'UU', 'BiasedMF', 'SVD', 'Pop']
     # names = ['Bias'] 
     data, start, end = read_dataset(dataset)
-    grid = get_grid(dataset, 'rmse') # grid is always selected from rmse table, normal grid table is not used
+    grid = get_grid(dataset, 'ndcg') # originally: grid is always selected from rmse table, normal grid table is not used
     if dataset == 'ML-100k':
         g = data.groupby(pd.Grouper(key='timestamp', freq='M'))
     else:
@@ -152,7 +152,6 @@ def main(dataset):
 
 
 if __name__ == "__main__":
-    # Dieser Block wird nur ausgeführt, wenn das Skript direkt gestartet wird.
 
     # print("Starte Haupt-Evaluation (NDCG/Recall) für amazon-instantvideo")
     # ergebnisse = main('amazon-instantvideo')
