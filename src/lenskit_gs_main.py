@@ -167,3 +167,8 @@ if __name__ == "__main__":
     #ergebnisse = main('ML-1M')
     #print("Starte RMSE-Evaluation für MovieLens 1M")
     #ergebnisse2 = main_rmse('ML-1M')
+
+    print("Starte Haupt-Evaluation (NDCG/Recall) für Movie Tweetings")
+    ergebnisse = main('movie-tweetings')
+    # print("Starte RMSE-Evaluation für Tweetings")
+    # ergebnisse2 = main_rmse('movie-tweetings')

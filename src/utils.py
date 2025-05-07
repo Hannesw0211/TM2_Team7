@@ -120,7 +120,15 @@ def read_dataset(name, frac=None):
         data.timestamp = pd.to_datetime(data.timestamp, unit='s', origin='1970-01-01')
         start = 1999
         end = 2011
-               
+
+    elif name == 'movie-tweetings':
+        data = pd.read_table(r"..\Datasets\MovieTweetings\movie-tweetings-ratings.dat",
+                             sep='::', engine='python', header=None,
+                             names=['user', 'item', 'rating', 'timestamp'])
+        data.timestamp = pd.to_datetime(data.timestamp, unit='s', origin='1970-01-01')
+        start = 2013
+        end = 2021
+
     else:
         raise ValueError('Dataset not implemented')
     

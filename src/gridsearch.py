@@ -114,4 +114,6 @@ def get_algo(name, para):
         algo = basic.Popular()
     # elif name == 'BPR':
     #     algo = tf.BPR(para)
+    else:
+        raise ValueError(f"Unbekannter Algorithmusname: {name}")
     return algo
