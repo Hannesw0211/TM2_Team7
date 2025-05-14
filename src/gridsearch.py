@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Jul  5 12:43:26 2021
+Created on Mon Jul 5 12:43:26 2021
 
 @author: tsche
+
+Functions: evaluate, gs, gs_rmse, get_algo
 """
 
 import pandas as pd
@@ -12,6 +14,7 @@ from lenskit.algorithms import item_knn, user_knn, als
 from lenskit.algorithms import basic, Recommender, funksvd
 from lenskit.crossfold import partition_users, SampleFrac
 from lenskit.metrics.predict import rmse
+from custom_models import NMFRecommender
 
 def evaluate(aname, algo, train, test):
     fittable = util.clone(algo)
@@ -42,6 +45,10 @@ def gs(name, parameters, data):
             algo = als.BiasedMF(para)
         elif name == 'SVD':
             algo = funksvd.FunkSVD(para)
+        elif name == 'NMF':
+            algo = NMFRecommender(para)
+        #elif name == 'ALS':
+        #    algo = als.ImplicitMF(para)
         # elif name == 'BPR':
         #     algo = tf.BPR(para)
         #print('Testing' + str(para))
@@ -82,6 +89,10 @@ def gs_rmse(name, parameters, data):
             algo = als.BiasedMF(para)
         elif name == 'SVD':
             algo = funksvd.FunkSVD(para)
+        elif name == 'NMF':
+            algo = NMFRecommender(para)
+        #elif name == 'ALS':
+        #    algo = als.ImplicitMF(para)
         # elif name == 'BPR':
         #     algo = tf.BPR(para)
         #print('Testing' + str(para))
@@ -106,14 +117,18 @@ def get_algo(name, para):
         algo = user_knn.UserUser(para)
     elif name == 'Bias':
         algo = basic.Bias(damping=para)
-    elif name == 'BiasedMF':
+    elif name == 'BiasedMF': #BiasedMF = ALS, explizit
         algo = als.BiasedMF(para)
-    elif name == 'SVD':
+    elif name == 'SVD': #Standard MF
         algo = funksvd.FunkSVD(para)
     elif name == 'Pop':
         algo = basic.Popular()
+    elif name == 'NMF':
+        algo = NMFRecommender(para)
     # elif name == 'BPR':
     #     algo = tf.BPR(para)
+    #elif name == 'ALS': #ALS = ALS, implizit
+    #    algo = als.ImplicitMF(para)
     else:
         raise ValueError(f"Unbekannter Algorithmusname: {name}")
     return algo

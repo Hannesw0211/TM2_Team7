@@ -17,7 +17,14 @@ The following datasets were used:
 - Movielens (100k, 1M, 10M)
 - yelp
 - Movie Tweetings: https://github.com/sidooms/MovieTweetings
-
 Large Dataset over 100MB cannot be pushed to Github, thus need to be compressed to push and decompressed to use
 Any other datasets that include a timestamp can be used. The reading instructions just need to be added
 to the function 'read_datasets' in the util.py file.
+
+Algorithms:
+- Item/Item and User/User KNN
+- Popularity
+- Bias
+- BiasedMF
+- SVD
+- NMF

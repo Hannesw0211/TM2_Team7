@@ -3,6 +3,8 @@
 Created on Fri Jun 18 16:08:45 2021
 
 @author: tsche
+
+Functions: evaluate_pred, evaluate_rec, final_plot, main_rmse, main
 """
 
 import pandas as pd
@@ -103,7 +105,7 @@ def main_rmse(dataset):
 
 
 def main(dataset):
-    names = ['Bias', 'II', 'UU', 'BiasedMF', 'SVD', 'Pop']
+    names = ['NMF', 'Pop', 'Bias'] #'Bias', 'II', 'UU', 'BiasedMF', 'SVD', 'Pop','NMF'
     # names = ['Bias'] 
     data, start, end = read_dataset(dataset)
     grid = get_grid(dataset, 'ndcg') # originally: grid is always selected from rmse table, normal grid table is not used
@@ -116,6 +118,8 @@ def main(dataset):
     all_results = pd.DataFrame(columns=['ndcg', 'recall', 'precision'])
     i = 0
     for df in splits:
+        #if i >= 3:
+            #break  # only evaluate the first x splits; attention: doing this makes year labels on the X-axis of the result graph incorrect
         all_recs = []
         new_df = pd.merge(new_df, df, how='outer')
         new_df = new_df.groupby("user").filter(lambda grp: len(grp) > 2)
@@ -168,7 +172,12 @@ if __name__ == "__main__":
     #print("Starte RMSE-Evaluation für MovieLens 1M")
     #ergebnisse2 = main_rmse('ML-1M')
 
-    print("Starte Haupt-Evaluation (NDCG/Recall) für Movie Tweetings")
-    ergebnisse = main('movie-tweetings')
+    # print("Starte Haupt-Evaluation (NDCG/Recall) für Movie Tweetings")
+    # ergebnisse = main('movie-tweetings')
+    # print("Starte RMSE-Evaluation für Tweetings")
+    # ergebnisse2 = main_rmse('movie-tweetings')
+
+    print("Starte Haupt-Evaluation (NDCG/Recall) für amazon-instantvideo")
+    ergebnisse = main('amazon-instantvideo')
     # print("Starte RMSE-Evaluation für Tweetings")
     # ergebnisse2 = main_rmse('movie-tweetings')
