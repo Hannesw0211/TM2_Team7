@@ -28,3 +28,4 @@ Algorithms:
 - BiasedMF
 - SVD
 - NMF
+- Random

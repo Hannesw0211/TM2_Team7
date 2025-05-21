@@ -4,6 +4,7 @@ Created on Mon Jul 5 12:43:26 2021
 
 @author: tsche
 
+gridssearch.py
 Functions: evaluate, gs, gs_rmse, get_algo
 """
 
@@ -34,6 +35,9 @@ def gs(name, parameters, data):
         algo = basic.Popular()
         best_para = 0
         return best_para, 0
+    elif name == 'Random':
+        best_para = 0
+        return best_para, 0
     for para in parameters:
         if name == 'II':
             algo = item_knn.ItemItem(para)
@@ -47,6 +51,8 @@ def gs(name, parameters, data):
             algo = funksvd.FunkSVD(para)
         elif name == 'NMF':
             algo = NMFRecommender(para)
+        elif name == 'Random':
+            algo = basic.Random()
         #elif name == 'ALS':
         #    algo = als.ImplicitMF(para)
         # elif name == 'BPR':
@@ -78,6 +84,9 @@ def gs_rmse(name, parameters, data):
         algo = basic.Popular()
         best_para = 0
         return best_para, 0
+    elif name == 'Random':
+        best_para = 0
+        return best_para, 0
     for para in parameters:
         if name == 'II':
             algo = item_knn.ItemItem(para)
@@ -91,6 +100,8 @@ def gs_rmse(name, parameters, data):
             algo = funksvd.FunkSVD(para)
         elif name == 'NMF':
             algo = NMFRecommender(para)
+        elif name == 'Random':
+            algo = basic.Random()
         #elif name == 'ALS':
         #    algo = als.ImplicitMF(para)
         # elif name == 'BPR':
@@ -125,6 +136,8 @@ def get_algo(name, para):
         algo = basic.Popular()
     elif name == 'NMF':
         algo = NMFRecommender(para)
+    elif name == 'Random':
+        algo = basic.Random()
     # elif name == 'BPR':
     #     algo = tf.BPR(para)
     #elif name == 'ALS': #ALS = ALS, implizit

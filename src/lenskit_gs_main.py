@@ -4,6 +4,7 @@ Created on Fri Jun 18 16:08:45 2021
 
 @author: tsche
 
+lenskit_gs_main.py
 Functions: evaluate_pred, evaluate_rec, final_plot, main_rmse, main
 """
 
@@ -58,7 +59,7 @@ def final_plot(results, metric, algos, start, end, steps, dataset):
 
 
 def main_rmse(dataset):
-    names = ['Bias', 'II', 'UU', 'BiasedMF', 'SVD', 'Pop']
+    names = ['Bias', 'II', 'UU', 'BiasedMF', 'SVD', 'Pop', 'Random']
     data, start, end = read_dataset(dataset)
     grid = get_grid(dataset, 'rmse')
     if dataset == 'ML-100k':
@@ -78,6 +79,8 @@ def main_rmse(dataset):
             tp, tp2 = partition_users(new_df, 2, method=LastFrac(0.2, col='timestamp'))
             for name in names:
                 if name == 'Pop':
+                    best_para = 0
+                elif name == 'Random':
                     best_para = 0
                 else:
                     grid_algo = [int(s) for s in grid[name].split(',')]
@@ -105,7 +108,7 @@ def main_rmse(dataset):
 
 
 def main(dataset):
-    names = ['NMF', 'Pop', 'Bias'] #'Bias', 'II', 'UU', 'BiasedMF', 'SVD', 'Pop','NMF'
+    names = ['Random', 'Pop'] #'Bias', 'II', 'UU', 'BiasedMF', 'SVD', 'Pop', 'NMF', 'Random'
     # names = ['Bias'] 
     data, start, end = read_dataset(dataset)
     grid = get_grid(dataset, 'ndcg') # originally: grid is always selected from rmse table, normal grid table is not used
@@ -129,6 +132,8 @@ def main(dataset):
             tp, tp2 = partition_users(new_df, 2, method=LastFrac(0.2, col='timestamp'))
             for name in names:
                 if name == 'Pop':
+                    best_para = 0
+                elif name == 'Random':
                     best_para = 0
                 else:
                     grid_algo = [int(s) for s in grid[name].split(',')]

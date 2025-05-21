@@ -1,4 +1,6 @@
 """
+custom_models.py
+
 NMFRecommender:
     A recommender system based on Non-Negative Matrix Factorization using scikit-learn
     Wraps the sklearn NMF to handle user/item mapping and provide prediction/recommendation methods
