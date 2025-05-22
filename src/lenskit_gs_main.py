@@ -65,7 +65,7 @@ def main_rmse(dataset):
     if dataset == 'ML-100k':
         g = data.groupby(pd.Grouper(key='timestamp', freq='M'))
     else:
-        g = data.groupby(pd.Grouper(key='timestamp', freq='Y'))
+        g = data.groupby(pd.Grouper(key='timestamp', freq='YE'))
     splits = [group for _, group in g]
     new_df = pd.DataFrame(columns=['user', 'item', 'rating'])
     pred_results = np.array([['Algorithm', 'RMSE']])
@@ -161,28 +161,17 @@ def main(dataset):
 
 
 if __name__ == "__main__":
+    import os
 
-    # print("Starte Haupt-Evaluation (NDCG/Recall) für amazon-instantvideo")
-    # ergebnisse = main('amazon-instantvideo')
-    # print("Starte RMSE-Evaluation für amazon-instantvideo")
-    # ergebnisse2 = main_rmse('amazon-instantvideo')
+    print("Current working directory:", os.getcwd())
 
-    # print("Starte Haupt-Evaluation (NDCG/Recall) für amazon-electronics")
-    # ergebnisse = main('amazon-electronics')
-    # print("Starte RMSE-Evaluation für amazon-electronics")
-    # ergebnisse2 = main_rmse('amazon-electronics')
+    # available datasets: 'movie-tweetings', 'librarything' ,'amazon-electronics', 'amazon-instantvideo', 'ML-1M'
+    dataset = 'librarything'
 
-    #print("Starte Haupt-Evaluation (NDCG/Recall) für MovieLens 1M")
-    #ergebnisse = main('ML-1M')
-    #print("Starte RMSE-Evaluation für MovieLens 1M")
-    #ergebnisse2 = main_rmse('ML-1M')
+    # Haupt-Evaluation
+    print(f"Starte Haupt-Evaluation (NDCG/Recall) für {dataset}")
+    ergebnisse = main(dataset)
 
-    # print("Starte Haupt-Evaluation (NDCG/Recall) für Movie Tweetings")
-    # ergebnisse = main('movie-tweetings')
-    # print("Starte RMSE-Evaluation für Tweetings")
-    # ergebnisse2 = main_rmse('movie-tweetings')
-
-    print("Starte Haupt-Evaluation (NDCG/Recall) für amazon-instantvideo")
-    ergebnisse = main('amazon-instantvideo')
-    # print("Starte RMSE-Evaluation für Tweetings")
-    # ergebnisse2 = main_rmse('movie-tweetings')
+    # RMSE-Evaluation
+    # print(f"Starte RMSE-Evaluation für {dataset}")
+    # ergebnisse2 = main_rmse(dataset)
