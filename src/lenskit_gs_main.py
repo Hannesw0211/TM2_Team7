@@ -168,10 +168,18 @@ if __name__ == "__main__":
     # available datasets: 'movie-tweetings', 'librarything' ,'amazon-electronics', 'amazon-instantvideo', 'ML-1M'
     dataset = 'librarything'
 
-    # Haupt-Evaluation
+    # Haupt-Evaluation (NDCG/Recall)
+    # NDCG Range: 0 to 1
+    #   0: No relevant items found or highly ranked.
+    #   1: All relevant items found and perfectly ranked at the top.
+    # Recall Range: 0 to 1
+    #   0: None of the actual relevant items were recommended.
+    #   1: All actual relevant items were recommended.
     print(f"Starte Haupt-Evaluation (NDCG/Recall) für {dataset}")
     ergebnisse = main(dataset)
 
     # RMSE-Evaluation
-    # print(f"Starte RMSE-Evaluation für {dataset}")
-    # ergebnisse2 = main_rmse(dataset)
+    #   0: Perfect prediction (no error).
+    #   Higher values indicate larger prediction errors.
+    #print(f"Starte RMSE-Evaluation für {dataset}")
+    #ergebnisse2 = main_rmse(dataset)
