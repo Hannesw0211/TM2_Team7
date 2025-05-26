@@ -108,14 +108,14 @@ def main_rmse(dataset):
 
 
 def main(dataset):
-    names = ['Pop'] #'Bias', 'II', 'UU', 'BiasedMF', 'SVD', 'Pop', 'NMF', 'Random'
+    names = ['Pop', 'Random', 'Bias', 'NMF'] #'Bias', 'II', 'UU', 'BiasedMF', 'SVD', 'Pop', 'NMF', 'Random'
     # names = ['Bias']
     # Addition of 'Frac' (see below): only using fraction of dataset for faster development/testing
     #     Set frac=None for full dataset (for final evaluation), e.g., frac=0.01 for 1% sample (for debugging)
     data, start, end = read_dataset(dataset, frac = None)
     grid = get_grid(dataset, 'ndcg') # originally: grid is always selected from rmse table, normal grid table is not used
-    if dataset == 'ML-100k':
-        g = data.groupby(pd.Grouper(key='timestamp', freq='M'))
+    if dataset == 'ML-100k': #or dataset == 'modcloth'
+        g = data.groupby(pd.Grouper(key='timestamp', freq='ME'))
     else:
         g = data.groupby(pd.Grouper(key='timestamp', freq='YE'))
     splits = [group for _, group in g]
@@ -167,8 +167,8 @@ if __name__ == "__main__":
 
     print("Current working directory:", os.getcwd())
 
-    # available datasets: 'movie-tweetings', 'librarything' ,'amazon-electronics', 'amazon-instantvideo', 'ML-1M'
-    dataset = 'librarything'
+    # available datasets: 'movie-tweetings', 'librarything' ,'amazon-electronics', 'amazon-instantvideo', 'ML-1M', 'modcloth'
+    dataset = 'modcloth'
 
     # Haupt-Evaluation (NDCG/Recall)
     # NDCG Range: 0 to 1

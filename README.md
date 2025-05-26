@@ -18,6 +18,8 @@ The following datasets were used:
 - yelp
 - Movie Tweetings: https://github.com/sidooms/MovieTweetings
 - LibraryThing: https://cseweb.ucsd.edu/~jmcauley/datasets.html#social_data (cannot be pushed to GitHub)
+- Modcloth: https://cseweb.ucsd.edu/~jmcauley/datasets.html#market_bias
+
 Large Dataset over 100MB cannot be pushed to Github, thus need to be compressed to push and decompressed to use
 Any other datasets that include a timestamp can be used. The reading instructions just need to be added
 to the function 'read_datasets' in the util.py file.

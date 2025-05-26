@@ -125,7 +125,7 @@ def read_dataset(name, frac=None):
         start = 1999
         end = 2011
 
-    elif name == 'movie-tweetings':
+    elif name == 'movie-tweetings': #movies
         data = pd.read_table(r"..\Datasets\MovieTweetings\movie-tweetings-ratings.dat", #linux: r"../Datasets/MovieTweetings/movie-tweetings-ratings.dat", windows: r"..\Datasets\MovieTweetings\movie-tweetings-ratings.dat"
                              sep='::', engine='python', header=None,
                              names=['user', 'item', 'rating', 'timestamp'])
@@ -134,7 +134,7 @@ def read_dataset(name, frac=None):
         end = 2021
 
 
-    elif name == 'librarything':  # Python-Dictionary als String
+    elif name == 'librarything':  # Python-Dictionary als String  #Books
 
         reviews = {}
         reviews_file_path = r"..\Datasets\Amazon\lthing_data\reviews.txt" #linux: "../Datasets/Amazon/lthing_data/reviews.txt", windows: r"..\Datasets\Amazon\lthing_data\reviews.txt"
@@ -181,6 +181,20 @@ def read_dataset(name, frac=None):
 
         start = data.timestamp.dt.year.min()
         end = data.timestamp.dt.year.max()
+
+
+    elif name == 'modcloth':  #clothing
+        file_path = r"..\Datasets\Modcloth\df_modcloth.csv" #linux: "../Datasets/Modcloth/df_modcloth.csv", windows: r"..\Datasets\Modcloth\df_modcloth.csv"
+        data = pd.read_csv(file_path, sep=',')
+        data = data.rename(columns={'user_id': 'user', 'item_id': 'item'})[['user', 'item', 'rating', 'timestamp']]
+        data['timestamp'] = pd.to_datetime(data['timestamp'], format='ISO8601')
+        # ID-Normalisierung
+        data['user'] = data.groupby(['user']).ngroup()
+        data['item'] = data.groupby(['item']).ngroup()
+        # Start- und Endjahr automatisch aus Daten bestimmen
+        start = data.timestamp.dt.year.min()
+        end = data.timestamp.dt.year.max()
+        print(f"Loaded {len(data)} reviews for ModCloth, year range: {start} to {end}")
 
 
     else:
