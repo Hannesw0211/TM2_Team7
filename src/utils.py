@@ -8,6 +8,7 @@ utils.py
 Functions: get_grid, read_dataset
 """
 import pandas as pd
+import ast
 
 def get_grid(name, metric):
     if metric == 'ndcg':
@@ -54,7 +55,7 @@ def read_dataset(name, frac=None):
         end = 2017
                
     elif name == 'amazon-instantvideo':
-        data = pd.read_table(r"..\Datasets\Amazon\ratings_Amazon_Instant_Video.csv",
+        data = pd.read_table(r"..\Datasets\Amazon\ratings_Amazon_Instant_Video.csv", #windows: r"..\Datasets\Amazon\ratings_Amazon_Instant_Video.csv", linux: r"../Datasets/Amazon/ratings_Amazon_Instant_Video.csv"
                      sep=',', header = 0, names=['user', 'item', 'rating', 'timestamp'], engine='python') 
         data['user'] = data.groupby(['user']).ngroup()
         data['item'] = data.groupby(['item']).ngroup()
@@ -125,20 +126,69 @@ def read_dataset(name, frac=None):
         end = 2011
 
     elif name == 'movie-tweetings':
-        data = pd.read_table(r"..\Datasets\MovieTweetings\movie-tweetings-ratings.dat",
+        data = pd.read_table(r"..\Datasets\MovieTweetings\movie-tweetings-ratings.dat", #linux: r"../Datasets/MovieTweetings/movie-tweetings-ratings.dat", windows: r"..\Datasets\MovieTweetings\movie-tweetings-ratings.dat"
                              sep='::', engine='python', header=None,
                              names=['user', 'item', 'rating', 'timestamp'])
         data.timestamp = pd.to_datetime(data.timestamp, unit='s', origin='1970-01-01')
         start = 2013
         end = 2021
 
+
+    elif name == 'librarything':  # Python-Dictionary als String
+
+        reviews = {}
+        reviews_file_path = r"..\Datasets\Amazon\lthing_data\reviews.txt" #linux: "../Datasets/Amazon/lthing_data/reviews.txt", windows: r"..\Datasets\Amazon\lthing_data\reviews.txt"
+
+        # Process the file line by line to build the dictionary
+        try:
+            with open(reviews_file_path, 'r', encoding='utf-8') as f:
+                exec_globals = {'reviews': reviews}
+                for line in f:
+                    if line.strip():
+                        exec(line, exec_globals)
+        except Exception as e:  # Catch any exception during file loading/parsing
+            print(f"Error loading or parsing {reviews_file_path}: {e}")
+            raise  # Re-raise the exception to stop execution
+
+        rows = []
+
+        skipped_reviews_count = 0
+
+        for (item, user), rev in reviews.items():
+            if 'stars' in rev:
+                rows.append({
+                    'user': user,
+                    'item': item,
+                    'rating': rev['stars'],
+                    'timestamp': pd.to_datetime(rev['unixtime'], unit='s', origin='1970-01-01')
+                })
+            else:
+                skipped_reviews_count += 1
+
+        data = pd.DataFrame(rows)
+
+        if skipped_reviews_count > 0:
+            print(f"Skipped {skipped_reviews_count} reviews due to missing 'stars' key")
+
+        # ID-Normalisierung wie gewohnt
+        data['user'] = data.groupby(['user']).ngroup()
+        data['item'] = data.groupby(['item']).ngroup()
+
+        min_librarything_year = 2005
+
+        initial_rows = len(data)
+        data = data[data['timestamp'].dt.year >= min_librarything_year]
+
+        start = data.timestamp.dt.year.min()
+        end = data.timestamp.dt.year.max()
+
+
     else:
         raise ValueError('Dataset not implemented')
-    
+
     data = data.groupby("user").filter(lambda grp: len(grp) > 2)
 
-    if frac is not None:    
-        data = data.sample(frac = frac)
-    
+    if frac is not None:
+        data = data.sample(frac=frac)
     return data, start, end
 
