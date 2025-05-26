@@ -108,9 +108,11 @@ def main_rmse(dataset):
 
 
 def main(dataset):
-    names = ['Random', 'Pop'] #'Bias', 'II', 'UU', 'BiasedMF', 'SVD', 'Pop', 'NMF', 'Random'
-    # names = ['Bias'] 
-    data, start, end = read_dataset(dataset)
+    names = ['Pop'] #'Bias', 'II', 'UU', 'BiasedMF', 'SVD', 'Pop', 'NMF', 'Random'
+    # names = ['Bias']
+    # Addition of 'Frac' (see below): only using fraction of dataset for faster development/testing
+    #     Set frac=None for full dataset (for final evaluation), e.g., frac=0.01 for 1% sample (for debugging)
+    data, start, end = read_dataset(dataset, frac = None)
     grid = get_grid(dataset, 'ndcg') # originally: grid is always selected from rmse table, normal grid table is not used
     if dataset == 'ML-100k':
         g = data.groupby(pd.Grouper(key='timestamp', freq='M'))
