@@ -1,6 +1,8 @@
 """
 custom_models.py
 
+algorithms: NMF, PMF
+
 NMFRecommender:
     A recommender system based on Non-Negative Matrix Factorization using scikit-learn
     Wraps the sklearn NMF to handle user/item mapping and provide prediction/recommendation methods
@@ -20,61 +22,205 @@ NMFRecommender:
 from sklearn.decomposition import NMF
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 class NMFRecommender: #Non-Negative Matrix Factorization
     def __init__(self, n_components=20, random_state=42, max_iter=500): #n_components may be changed according to dataset size
+        # Erstellt die NMF-Engine von scikit-learn
+        # n_components: Anzahl der latenten Faktoren, die gelernt werden sollen (hyperparameter)
+        # init='nndsvda': Initialisierungsmethode für die Matrizen W und H
+        # random_state: für Reproduzierbarkeit der Ergebnisse
+        # max_iter: Maximale Anzahl von Iterationen für den Optimierungsalgorithmus
         self.n_components = n_components
-        self.model = NMF(n_components=n_components, init='nndsvda', random_state=random_state, max_iter=max_iter) #creates the actual NMF engine from the sklearn library
-        self.user_map = {}
-        self.item_map = {}
-        self.user_inv = {}
+        self.model = NMF(n_components=n_components, init='nndsvda', random_state=random_state, max_iter=max_iter) #NMF-Modell von scikit-learn instanziiert
+        self.user_map = {} #Zuordnung Benutzer-IDs zu Integer-Indizes (Initialisierung: noch leer)
+        self.item_map = {} #Zuordnung von Artikel-IDs zu Integer-Indizes
+        self.user_inv = {} #inverese Zuordnung
         self.item_inv = {}
 
 
-    def fit(self, ratings): #Trains the NMF model on the provided ratings data
-        # Map user/item IDs to indices
-        users = ratings['user'].unique()
+    def fit(self, ratings): #Trains the NMF model on the provided ratings data  # ratings: Pandas DataFrame, das Spalten wie 'user', 'item' und 'rating' enthält
+        # Map user/item IDs to indices (mit Werten)
+        users = ratings['user'].unique() # einzigartigen Benutzer- und Artikel-IDs
         items = ratings['item'].unique()
-        self.user_map = {u: i for i, u in enumerate(users)}
+        self.user_map = {u: i for i, u in enumerate(users)} #ID-Mapping
         self.item_map = {i: j for j, i in enumerate(items)}
-        self.user_inv = {i: u for u, i in self.user_map.items()}
+        self.user_inv = {i: u for u, i in self.user_map.items()} #inverse
         self.item_inv = {j: i for i, j in self.item_map.items()}
 
-        # Create user-item matrix
-        R = np.zeros((len(users), len(items)))
+        # Create user-item matrix R
+        R = np.zeros((len(users), len(items))) # Dimensionen: (Anzahl der einzigartigen Benutzer) x (Anzahl der einzigartigen Artikel)
         for _, row in ratings.iterrows():
-            R[self.user_map[row['user']], self.item_map[row['item']]] = row['rating']
+            R[self.user_map[row['user']], self.item_map[row['item']]] = row['rating'] # Matrix mit den expliziten Bewertungen füllen
 
-        # Apply NMF
+        # Apply NMF to R: finden von optimalen Benutzer-Faktor-Matrix(W) und Artikel-Faktor-Matrix (H)
         self.W = self.model.fit_transform(R)
         self.H = self.model.components_
 
         return self
 
     def predict_for_user(self, user, items, ratings=None): #Predicts ratings for a list of items for a specific user
+        # Überprüft, ob der Benutzer im Modell bekannt ist: wenn nicht, werden NaN-Werte zurückgegeben
         if user not in self.user_map:
             return pd.Series(np.nan, index=items)
-        uid = self.user_map[user]
-        preds = {}
+        uid = self.user_map[user] # holt den internen Index des Benutzers
+        preds = {}  # Dictionary zum Speichern der Vorhersagen
+        # Überprüft, ob Artikel im Modell bekannt ist
         for item in items:
             if item in self.item_map:
-                iid = self.item_map[item]
-                preds[item] = np.dot(self.W[uid], self.H[:, iid])
-            else:
+                iid = self.item_map[item] # Index des Artikels holen
+                preds[item] = np.dot(self.W[uid], self.H[:, iid]) # Berechneung der vorhergesagten Bewertung durch Skalarprodukt von Benutzer-Faktor-Vektors (der entsprechenden Zeile aus self.W)
+                # & Artikel-Faktor-Vektors (der entsprechenden Spalte aus self.H) (ist die Rekonstruktion eines EIntrags der ursprünglichen Matrix)
+            else: #atrikel unbekannt: NaN gesetzt
                 preds[item] = np.nan
-        return pd.Series(preds)
+        return pd.Series(preds) # Vorhersagen als Pandas Series
 
-    def recommend(self, user, n=10, candidates=None, ratings=None): #Generates top-N recommendations for a specific user
+    def recommend(self, user, n=10, candidates=None, ratings=None): #Generates top-N recommendations for a specific user  # n: Anzahl der Top-Empfehlungen  #canidates: optionale Liste von Artikeln, aus denen Empfehlungen ausgewählt werden sollen
+
         if candidates is None:
-            candidates = list(self.item_map.keys())
+            candidates = list(self.item_map.keys()) #alle im Modell bekannten Artikel als Kandidaten betrachtet
 
-        scores = self.predict_for_user(user, candidates)
-        scores = scores.dropna()
-        top_scores = scores.nlargest(n)
+        scores = self.predict_for_user(user, candidates) # um die vorhergesagten Bewertungen für alle Kandidatenartikel für den gegebenen Benutzer zu erhalten
+        scores = scores.dropna() # Artikel, für die keine gültige Vorhersage gemacht werden konnte, entfernen
+        top_scores = scores.nlargest(n) # Artikel mit den höchsten vorhergesagten Bewertungen auswählen
 
-        # Setze explizit den Spaltennamen
         top_scores.name = 'score'
-        return top_scores.reset_index().rename(columns={'index': 'item'})
+        return top_scores.reset_index().rename(columns={'index': 'item'}) #Ergebnisse werden in Pandas DataFrame umgewandelt ( Spalten = 'Artikel-ID, 'score' = vorhergesagte Bewertung)
 
 
 
+class PMFRecommender:
+
+    def __init__(self, n_factors=20, lr=0.015, reg=0.02, n_iters=100, #Initialisiert den PMF-Recommender
+                 batch_size=10000, random_state=42):
+        # n_factors (int): Anzahl der latenten Faktoren, die das Modell lernen soll (Hyperparameter)
+        # lr (float): Lernrate (Learning Rate) für den Gradientenabstieg. Bestimmt die Schrittgröße der Parameterupdates
+        # reg (float): Regularisierungsstärke (Regularization) zur Vermeidung von Overfitting
+        # n_iters (int): Maximale Anzahl von Iterationen (Epochen) über den gesamten Datensatz während des Trainings
+        # batch_size (int): Größe der Mini-Batches, die pro Update-Schritt verarbeitet werden
+        #random_state (int): Startwert für den Zufallszahlengenerator zur Reproduzierbarkeit der Initialisierung der latenten Faktoren
+        self.n_factors = n_factors
+        self.lr = lr
+        self.reg = reg
+        self.n_iters = n_iters
+        self.batch_size = batch_size
+        self.random_state = random_state
+        # Dictionaries zur Abbildung von Benutzer- und Artikel-IDs auf interne Indizes
+        self.u_map = {}
+        self.i_map = {}
+        self.u_inv = {}
+        self.i_inv = {}
+
+    def fit(self, ratings): # trainiert das PMF-Modell auf den bereitgestellten Bewertungsdaten
+
+        # Map IDs to indices
+        users = ratings['user'].unique()
+        items = ratings['item'].unique()
+        self.u_map = {u: i for i, u in enumerate(users)}
+        self.i_map = {i: j for j, i in enumerate(items)}
+        self.u_inv = {i: u for u, i in self.u_map.items()}
+        self.i_inv = {j: i for i, j in self.i_map.items()}
+
+        n_u, n_i = len(users), len(items)
+
+        # Initialisierung der latenten Faktor-Matrizen (kleine zufällige Werte)
+        # P für Benutzer (users x n_factors) und Q für Artikel (items x n_factors)
+        rng = np.random.RandomState(self.random_state)
+        P = 0.1 * rng.randn(n_u, self.n_factors).astype(np.float32)
+        Q = 0.1 * rng.randn(n_i, self.n_factors).astype(np.float32)
+
+        # Pre-compute arrays: externen IDs einmalig in interne Indizes umgewandelt und als numpy arrays gespeichert
+        user_idx = ratings['user'].map(self.u_map).values.astype(np.int32)
+        item_idx = ratings['item'].map(self.i_map).values.astype(np.int32)
+        rating_vals = ratings['rating'].values.astype(np.float32)
+        n_ratings = len(ratings)
+
+        # Training loop with batch processing: iteriert über eine festgelegte Anzahl von Epochen
+        for epoch in range(self.n_iters):
+            # Shuffle all data: Für jede Epoche werden die Reihenfolge der Ratings zufällig gemischt (konvergenz von sgd und lokale minima vermeiden)
+            shuffle_idx = rng.permutation(n_ratings)
+
+            # Process in batches: gemischten Ratings werden in Mini-Batches aufgeteilt
+            n_batches = (n_ratings + self.batch_size - 1) // self.batch_size
+
+            for batch_start in range(0, n_ratings, self.batch_size):
+                batch_end = min(batch_start + self.batch_size, n_ratings)
+                batch_indices = shuffle_idx[batch_start:batch_end]
+
+                # Extract batch data: Extrahieren der Benutzer-, Artikel- und Bewertungsdaten
+                batch_users = user_idx[batch_indices]
+                batch_items = item_idx[batch_indices]
+                batch_ratings = rating_vals[batch_indices]
+
+                # _sgd_batch aufrufen, die die eigentlichen Gradientenabstiegs-Updates für aktuellen Mini-Batch durchführt
+                self._sgd_batch(P, Q, batch_users, batch_items, batch_ratings)
+
+        # optimierten Benutzer- (P) und Artikel-Faktoren (Q) gespeichert
+        self.P, self.Q = P, Q
+        return self
+
+    def _sgd_batch(self, P, Q, batch_users, batch_items, batch_ratings):
+        # Aktualisiert die latenten Faktoren P und Q basierend auf den Vorhersagefehlern
+
+        # Iteriert über jedes Rating im aktuellen Mini-Batch
+        batch_size = len(batch_users)
+        for i in range(batch_size):
+            u = batch_users[i]    # Aktueller Benutzer-Index
+            it = batch_items[i]   # Aktueller Artikel-Index
+            r = batch_ratings[i]  # Aktueller Bewertungswert
+
+            # vorhergesagte Bewertung für das aktuelle Paar (u, it) als Skalarprodukt der latenten Faktoren von Benutzer und Artikel
+            pred = np.dot(P[u], Q[it])
+            # Vorhersagefehler
+            err = r - pred
+
+            # Store current factors (needed for simultaneous update)
+            Pu = P[u].copy()
+            Qi = Q[it].copy()
+
+            # Aktualisierung der latenten Faktoren von Benutzer und Artikel
+            # Die Faktoren werden proportional zum Fehler (err) und zur Lernrate (self.lr) angepasst
+            P[u] += self.lr * (err * Qi - self.reg * Pu)
+            Q[it] += self.lr * (err * Pu - self.reg * Qi)
+
+    def predict_for_user(self, user, items, ratings=None): # Berechnet die vorhergesagten Bewertungen für eine Liste von Artikeln für einen bestimmten Benutzer
+
+        #Berechnet die vorhergesagten Bewertungen für eine Liste von Artikeln für einen bestimmten Benutzer.
+
+        # Benutzer nicht im Modell bekannt: NaN
+        if user not in self.u_map:
+            return pd.Series(np.nan, index=items)
+
+        u = self.u_map[user] # Index Benutzer holen
+
+        preds = {}
+
+        # Berechnung von Vorhersagen für bekannte Artikel
+        valid_items = [it for it in items if it in self.i_map]
+        if valid_items:
+            item_indices = [self.i_map[it] for it in valid_items]
+            # Berechnet das Skalarprodukt des Benutzer-Faktor-Vektors (P[u]) mit allen gültigen Artikel-Faktor-Vektoren (Q[item_indices])
+            scores = np.dot(self.P[u], self.Q[item_indices].T)
+
+            # Ordnet die berechneten Scores den ursprünglichen Artikel-IDs zu
+            for it, score in zip(valid_items, scores):
+                preds[it] = score
+
+        # Handle invalid items: Setzt NaN für Artikel, die im Modell unbekannt sind
+        for it in items:
+            if it not in preds:
+                preds[it] = np.nan
+
+        return pd.Series(preds) # Vorhersagen als Pandas Series
+
+    def recommend(self, user, n=10, candidates=None, ratings=None): #Generiert Top-N Empfehlungen für einen bestimmten Benutzer
+        # Wenn keine Kandidaten angegeben sind, werden alle im Modell bekannten Artikel als Kandidaten betrachtet
+        if candidates is None:
+            candidates = list(self.i_map.keys())
+
+        # Ruft die vorhergesagten Bewertungen für alle Kandidatenartikel für den gegebenen Benutzer ab.
+        scores = self.predict_for_user(user, candidates).dropna()
+        # Wählt die Top-N Artikel mit den höchsten vorhergesagten Bewertungen aus.
+        top = scores.nlargest(n).reset_index()
+        top.columns = ['item', 'score']
+        return top
