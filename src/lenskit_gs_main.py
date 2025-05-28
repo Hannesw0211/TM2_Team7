@@ -21,6 +21,8 @@ from lenskit.crossfold import partition_users, LastFrac
 from utils import read_dataset, get_grid
 from gridsearch import gs, gs_rmse, get_algo
 import os
+from lenskit.algorithms import Recommender
+from lenskit.util import clone
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
@@ -59,7 +61,7 @@ def final_plot(results, metric, algos, start, end, steps, dataset):
 
 
 def main_rmse(dataset):
-    names = ['Bias', 'II', 'UU', 'BiasedMF', 'SVD', 'Pop', 'Random']
+    names = ['Bias', 'II', 'UU', 'BiasedMF', 'SVD', 'Pop', 'Random', 'PMF']
     data, start, end = read_dataset(dataset)
     grid = get_grid(dataset, 'rmse')
     if dataset == 'ML-100k':
@@ -108,7 +110,7 @@ def main_rmse(dataset):
 
 
 def main(dataset):
-    names = ['Pop', 'Random', 'Bias', 'NMF'] #'Bias', 'II', 'UU', 'BiasedMF', 'SVD', 'Pop', 'NMF', 'Random'
+    names = ['PMF'] #'Bias', 'II', 'UU', 'BiasedMF', 'SVD', 'Pop', 'NMF', 'Random'
     # names = ['Bias']
     # Addition of 'Frac' (see below): only using fraction of dataset for faster development/testing
     #     Set frac=None for full dataset (for final evaluation), e.g., frac=0.01 for 1% sample (for debugging)
