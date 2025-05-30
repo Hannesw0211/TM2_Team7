@@ -196,6 +196,15 @@ def read_dataset(name, frac=None):
         end = data.timestamp.dt.year.max()
         print(f"Loaded {len(data)} reviews for ModCloth, year range: {start} to {end}")
 
+    elif name == 'amazon-magazine':
+        data = pd.read_table(r"..\Datasets\Amazon\amazon_magazine.csv",
+                             sep=',', header=None, names=['user', 'item', 'rating', 'timestamp'], engine='python')
+        data['user'] = data.groupby(['user']).ngroup()
+        data['item'] = data.groupby(['item']).ngroup()
+        data.timestamp = pd.to_datetime(data.timestamp, unit='s', origin='1970-01-01')
+        start = data.timestamp.min().year
+        end = data.timestamp.max().year
+
 
     else:
         raise ValueError('Dataset not implemented')
@@ -204,5 +213,7 @@ def read_dataset(name, frac=None):
 
     if frac is not None:
         data = data.sample(frac=frac)
+
+    data = data.drop_duplicates(subset=['user', 'item'], keep='last') # entfernen doppelter user items kombis
     return data, start, end
 

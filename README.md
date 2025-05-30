@@ -19,6 +19,7 @@ The following datasets were used:
 - Movie Tweetings: https://github.com/sidooms/MovieTweetings
 - LibraryThing: https://cseweb.ucsd.edu/~jmcauley/datasets.html#social_data (cannot be pushed to GitHub)
 - Modcloth: https://cseweb.ucsd.edu/~jmcauley/datasets.html#market_bias
+- Amazon Magazine Subscriptions (small dataset): https://nijianmo.github.io/amazon/index.html
 
 Large Dataset over 100MB cannot be pushed to Github, thus need to be compressed to push and decompressed to use
 Any other datasets that include a timestamp can be used. The reading instructions just need to be added
