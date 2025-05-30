@@ -110,7 +110,7 @@ def main_rmse(dataset):
 
 
 def main(dataset):
-    names = ['PMF'] #'Bias', 'II', 'UU', 'BiasedMF', 'SVD', 'Pop', 'NMF', 'Random'
+    names = ['Bias', 'II', 'UU', 'BiasedMF', 'SVD', 'Pop'] #'Bias', 'II', 'UU', 'BiasedMF', 'SVD', 'Pop', 'NMF', 'Random', 'SlopeOne', 'PMF'
     # names = ['Bias']
     # Addition of 'Frac' (see below): only using fraction of dataset for faster development/testing
     #     Set frac=None for full dataset (for final evaluation), e.g., frac=0.01 for 1% sample (for debugging)
@@ -158,8 +158,8 @@ def main(dataset):
 
     all_results.to_csv(r"..\Results\{dataset}_result_10.csv".format(dataset=dataset))
 
-    final_plot(all_results, 'recall', names, start, end, i, dataset)
-    final_plot(all_results, 'ndcg', names, start, end, i, dataset)
+    final_plot(all_results,'recall', names, start, end, i,dataset)
+    final_plot(all_results,'ndcg', names, start, end, i,dataset)
 
     return all_results
 
@@ -169,8 +169,8 @@ if __name__ == "__main__":
 
     print("Current working directory:", os.getcwd())
 
-    # available datasets: 'movie-tweetings', 'librarything' ,'amazon-electronics', 'amazon-instantvideo', 'ML-1M', 'modcloth'
-    dataset = 'modcloth'
+    # available datasets: 'movie-tweetings', 'librarything' ,'amazon-electronics', 'amazon-instantvideo', 'ML-1M', 'modcloth', 'amazon-beauty'
+    dataset = 'amazon-instantvideo'
 
     # Haupt-Evaluation (NDCG/Recall)
     # NDCG Range: 0 to 1

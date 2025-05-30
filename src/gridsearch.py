@@ -15,7 +15,7 @@ from lenskit.algorithms import item_knn, user_knn, als
 from lenskit.algorithms import basic, Recommender, funksvd
 from lenskit.crossfold import partition_users, SampleFrac
 from lenskit.metrics.predict import rmse
-from custom_models import NMFRecommender, PMFRecommender #, SlopeOneRecommender
+from custom_models import NMFRecommender, PMFRecommender , SlopeOneRecommender
 
 def evaluate(aname, algo, train, test):
     fittable = util.clone(algo)
@@ -55,8 +55,8 @@ def gs(name, parameters, data):
             algo = basic.Random()
         elif name == 'PMF':
             algo = PMFRecommender(n_factors=para)
-        #elif name == 'SlopeOne':
-        #    algo = SlopeOneRecommender(min_pairs=para)
+        elif name == 'SlopeOne':
+            algo = SlopeOneRecommender()
             #elif name == 'ALS':
         #    algo = als.ImplicitMF(para)
         # elif name == 'BPR':
@@ -108,8 +108,8 @@ def gs_rmse(name, parameters, data):
             algo = basic.Random()
         elif name == 'PMF':
             algo = PMFRecommender(n_factors=para)
-        #elif name == 'SlopeOne':
-        #    algo = SlopeOneRecommender(min_pairs=para)
+        elif name == 'SlopeOne':
+            algo = SlopeOneRecommender()
         #elif name == 'ALS':
         #    algo = als.ImplicitMF(para)
         # elif name == 'BPR':
@@ -148,8 +148,8 @@ def get_algo(name, para):
         algo = basic.Random()
     elif name == 'PMF':
         algo = PMFRecommender(n_factors=para)
-    #elif name == 'SlopeOne':
-    #    algo = SlopeOneRecommender(min_pairs=para)
+    elif name == 'SlopeOne':
+        algo = SlopeOneRecommender()
     # elif name == 'BPR':
     #     algo = tf.BPR(para)
     #elif name == 'ALS': #ALS = ALS, implizit

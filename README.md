@@ -32,3 +32,5 @@ Algorithms:
 - SVD
 - NMF
 - Random
+- PMF
+- SlopeOne

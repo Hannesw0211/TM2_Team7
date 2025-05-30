@@ -22,7 +22,9 @@ NMFRecommender:
 from sklearn.decomposition import NMF
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
+from collections import defaultdict
+from lenskit.algorithms import Recommender
+
 
 class NMFRecommender: #Non-Negative Matrix Factorization
     def __init__(self, n_components=20, random_state=42, max_iter=500): #n_components may be changed according to dataset size
@@ -224,3 +226,165 @@ class PMFRecommender:
         top = scores.nlargest(n).reset_index()
         top.columns = ['item', 'score']
         return top
+
+
+
+
+# @derivable() # Uncomment if you intend to use LensKit's derivable decorator for parameter saving
+class SlopeOneRecommender:
+    """
+    A recommender system based on the Slope One algorithm.
+
+    Slope One is a simple yet effective item-based collaborative filtering
+    algorithm that predicts a user's rating for an item based on the average
+    difference in ratings of other items rated by that user.
+    """
+
+    # Static methods for defaultdict factories to ensure picklability
+    @staticmethod
+    def _float_defaultdict_factory():
+        return defaultdict(float)
+
+    @staticmethod
+    def _int_defaultdict_factory():
+        return defaultdict(int)
+
+    def __init__(self):
+        self.item_map = {}  # Maps original item IDs to internal integer indices
+        self.item_inv = {}  # Maps internal integer indices back to original item IDs
+        self.user_map = {}  # Maps original user IDs to internal integer indices
+        self.user_inv = {}  # Maps internal integer indices back to original user IDs
+
+        # Use the static methods as factories for defaultdict
+        self.item_ratings_sum_diff = defaultdict(SlopeOneRecommender._float_defaultdict_factory)
+        self.item_freq_diff = defaultdict(SlopeOneRecommender._int_defaultdict_factory)
+
+        # Stores all ratings for each user, useful for prediction logic
+        # Structure: self.user_ratings[user_id] = {item_id_1: rating_1, item_id_2: rating_2}
+        self.user_ratings = defaultdict(dict)
+
+    def fit(self, ratings_df, **kwargs):  # Added **kwargs for Recommender.adapt compatibility
+        """
+        Trains the Slope One model.
+        This involves calculating the average rating differences between all pairs of items
+        that were co-rated by users.
+
+        Args:
+            ratings_df (pd.DataFrame): DataFrame with 'user', 'item', 'rating' columns.
+        """
+        users = ratings_df['user'].unique()
+        items = ratings_df['item'].unique()
+        self.user_map = {u: i for i, u in enumerate(users)}
+        self.item_map = {i: j for j, i in enumerate(items)}
+        self.user_inv = {i: u for u, i in self.user_map.items()}
+        self.item_inv = {j: i for i, j in self.item_map.items()}
+
+        self.user_ratings.clear()
+        self.item_ratings_sum_diff.clear()
+        self.item_freq_diff.clear()
+
+        for _, row in ratings_df.iterrows():
+            user_id, item_id, rating_val = row['user'], row['item'], float(row['rating'])
+            self.user_ratings[user_id][item_id] = rating_val
+
+        for user_id, current_user_ratings_dict in self.user_ratings.items():
+            rated_item_ids = list(current_user_ratings_dict.keys())
+            for i in range(len(rated_item_ids)):
+                for j in range(i + 1, len(rated_item_ids)):
+                    item1_id = rated_item_ids[i]
+                    item2_id = rated_item_ids[j]
+                    rating1 = current_user_ratings_dict[item1_id]
+                    rating2 = current_user_ratings_dict[item2_id]
+
+                    self.item_ratings_sum_diff[item1_id][item2_id] += (rating1 - rating2)
+                    self.item_freq_diff[item1_id][item2_id] += 1
+
+                    self.item_ratings_sum_diff[item2_id][item1_id] += (rating2 - rating1)
+                    self.item_freq_diff[item2_id][item1_id] += 1
+        return self
+
+    def predict_for_user(self, user, items_to_predict, ratings=None):
+        """
+        Predicts ratings for a list of items for a specific user.
+
+        Args:
+            user: The ID of the user for whom to predict ratings.
+            items_to_predict (list): A list of item IDs for which to predict ratings.
+            ratings (pd.Series, optional): The user's historical ratings.
+
+        Returns:
+            pd.Series: Predicted ratings, indexed by item ID. NaN for items
+                       that cannot be predicted or are unknown.
+        """
+        predictions = {}
+
+        if user not in self.user_ratings:
+            return pd.Series(np.nan, index=items_to_predict)
+
+        user_rated_items_dict = self.user_ratings.get(user, {})
+
+        for target_item_id in items_to_predict:
+            if target_item_id not in self.item_map:
+                predictions[target_item_id] = np.nan
+                continue
+
+            numerator = 0.0
+            denominator = 0.0
+
+            for rated_item_id, user_rating_for_rated_item in user_rated_items_dict.items():
+                if target_item_id in self.item_freq_diff and \
+                        rated_item_id in self.item_freq_diff[target_item_id]:
+
+                    freq_co_occurrence = self.item_freq_diff[target_item_id][rated_item_id]
+
+                    if freq_co_occurrence > 0:
+                        avg_diff = self.item_ratings_sum_diff[target_item_id][rated_item_id] / freq_co_occurrence
+                        numerator += (user_rating_for_rated_item + avg_diff) * freq_co_occurrence
+                        denominator += freq_co_occurrence
+
+            if denominator > 0:
+                predictions[target_item_id] = numerator / denominator
+            else:
+                predictions[target_item_id] = np.nan
+
+        return pd.Series(predictions).reindex(items_to_predict)
+
+    def recommend(self, user, n=10, candidates=None, ratings=None):
+        """
+        Generates top-N recommendations for a specific user.
+
+        Args:
+            user: The ID of the user for whom to generate recommendations.
+            n (int): The number of recommendations to return.
+            candidates (list, optional): A list of candidate item IDs to score.
+            ratings (pd.Series, optional): The user's historical ratings.
+
+        Returns:
+            pd.DataFrame: A DataFrame with 'item' and 'score' columns.
+        """
+        if user not in self.user_ratings and candidates is None:
+            return pd.DataFrame({'item': [], 'score': []})
+
+        user_rated_item_ids = set(self.user_ratings.get(user, {}).keys())
+
+        if candidates is None:
+            all_model_items = list(self.item_map.keys())
+            candidates_to_score = [item_id for item_id in all_model_items if item_id not in user_rated_item_ids]
+        else:
+            candidates_to_score = [item_id for item_id in candidates if item_id not in user_rated_item_ids]
+
+        if not candidates_to_score:
+            return pd.DataFrame({'item': [], 'score': []})
+
+        scores_series = self.predict_for_user(user, candidates_to_score, ratings=ratings)
+        scores_series = scores_series.dropna()
+
+        if scores_series.empty:
+            return pd.DataFrame({'item': [], 'score': []})
+
+        top_n_items = scores_series.nlargest(n)
+
+        recommendations_df = top_n_items.reset_index()
+        recommendations_df.columns = ['item', 'score']
+
+        return recommendations_df
