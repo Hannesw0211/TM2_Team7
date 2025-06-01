@@ -205,6 +205,31 @@ def read_dataset(name, frac=None):
         start = data.timestamp.min().year
         end = data.timestamp.max().year
 
+    elif name == 'amazon-beauty':
+        data = pd.read_csv(r"..\Datasets\Amazon\All_Beauty.csv",
+                           # windows: r"..\Datasets\Amazon\All_Beauty.csv", linux: r"../Datasets/Amazon/All_Beauty.csv"
+                           sep=',', header=None, names=['user', 'item', 'rating', 'timestamp'], engine='python')
+        data['user'] = data.groupby(['user']).ngroup()
+        data['item'] = data.groupby(['item']).ngroup()
+        data.timestamp = pd.to_datetime(data.timestamp, unit='s', origin='1970-01-01')
+        start = data.timestamp.dt.year.min()
+        end = data.timestamp.dt.year.max()
+        print(f"Loaded {len(data)} reviews for Amazon Beauty, year range: {start} to {end}")
+
+
+
+    elif name == 'amazon-giftcards': #warning: dataset has too little variance
+        data = pd.read_csv(r"../Datasets/Amazon/Gift_Cards.csv",
+                           # windows: r"..\Datasets\Amazon\Gift_Cards.csv", linux: r"../Datasets/Amazon/Gift_Cards.csv"
+                           sep=',', header=None, names=['user', 'item', 'rating', 'timestamp'], engine='python')
+        data['user'] = data.groupby(['user']).ngroup()
+        data['item'] = data.groupby(['item']).ngroup()
+        data.timestamp = pd.to_datetime(data.timestamp, unit='s', origin='1970-01-01')
+        start = data.timestamp.dt.year.min()
+        end = data.timestamp.dt.year.max()
+        print(f"Loaded {len(data)} reviews for Amazon Giftcards, year range: {start} to {end}")
+
+
 
     else:
         raise ValueError('Dataset not implemented')
