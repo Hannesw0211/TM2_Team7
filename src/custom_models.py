@@ -77,4 +77,68 @@ class NMFRecommender: #Non-Negative Matrix Factorization
         return top_scores.reset_index().rename(columns={'index': 'item'})
 
 
+import pandas as pd
+import numpy as np
+from lenskit import topn
+from sklearn.metrics.pairwise import cosine_similarity
 
+class UUCustom: # User-Item Scoring per Cosine Similarity + Ranking
+    def __init__(self, param=0, top_k=None):
+        self.param = param
+        self.top_k = top_k  # Optional: Nur die k ähnlichsten Nutzer verwenden
+
+    def fit(self, train):
+        self.train = train.copy()
+        self.user_item_matrix = train.pivot(index='user', columns='item', values='rating').fillna(0)
+        self.user_sim = cosine_similarity(self.user_item_matrix)
+        self.user_sim_df = pd.DataFrame(self.user_sim,
+                                        index=self.user_item_matrix.index,
+                                        columns=self.user_item_matrix.index)
+
+    def predict_for_user(self, user, items, ratings=None):
+        if user not in self.user_item_matrix.index:
+            return pd.Series(0.0, index=items)
+
+        scores = {}
+        user_sims = self.user_sim_df.loc[user]
+
+        # Optional: nur Top-K ähnlichste Nutzer verwenden (außer sich selbst)
+        if self.top_k is not None:
+            top_users = user_sims.drop(user).nlargest(self.top_k).index
+            user_sims = user_sims[top_users]
+
+        for item in items:
+            if item not in self.user_item_matrix.columns:
+                scores[item] = 0.0
+                continue
+
+            ratings_for_item = self.user_item_matrix[item]
+
+            # Nur Nutzer betrachten, die das Item bewertet haben
+            valid_users = ratings_for_item[ratings_for_item > 0].index
+            valid_users = valid_users.intersection(user_sims.index)
+
+            if len(valid_users) == 0:
+                scores[item] = 0.0
+                continue
+
+            sims = user_sims[valid_users]
+            ratings = ratings_for_item[valid_users]
+
+            sim_sum = sims.sum()
+            score = np.dot(sims, ratings)
+
+            scores[item] = score / sim_sum if sim_sum > 0 else 0.0
+
+        return pd.Series(scores)
+
+    def recommend(self, user, k=10):
+        if user not in self.user_item_matrix.index:
+            return []
+
+        all_items = set(self.user_item_matrix.columns)
+        known_items = set(self.user_item_matrix.columns[self.user_item_matrix.loc[user] > 0])
+        unknown_items = list(all_items - known_items)
+
+        scores = self.predict_for_user(user, unknown_items)
+        return scores.sort_values(ascending=False).head(k).index.tolist()
