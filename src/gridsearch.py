@@ -16,6 +16,7 @@ from lenskit.algorithms import basic, Recommender, funksvd
 from lenskit.crossfold import partition_users, SampleFrac
 from lenskit.metrics.predict import rmse
 from custom_models import NMFRecommender, PMFRecommender , SlopeOneRecommender
+from custom_models import NMFRecommender, UUCustom
 
 def evaluate(aname, algo, train, test):
     fittable = util.clone(algo)
@@ -58,6 +59,9 @@ def gs(name, parameters, data):
         elif name == 'SlopeOne':
             algo = SlopeOneRecommender()
             #elif name == 'ALS':
+        elif name == 'UUCustom':
+            algo = UUCustom(para)
+        #elif name == 'ALS':
         #    algo = als.ImplicitMF(para)
         # elif name == 'BPR':
         #     algo = tf.BPR(para)
@@ -110,6 +114,8 @@ def gs_rmse(name, parameters, data):
             algo = PMFRecommender(n_factors=para)
         elif name == 'SlopeOne':
             algo = SlopeOneRecommender()
+        elif name == 'UUCustom':
+            algo = UUCustom(para)
         #elif name == 'ALS':
         #    algo = als.ImplicitMF(para)
         # elif name == 'BPR':
@@ -150,6 +156,8 @@ def get_algo(name, para):
         algo = PMFRecommender(n_factors=para)
     elif name == 'SlopeOne':
         algo = SlopeOneRecommender()
+    elif name == 'UUCustom':
+        return UUCustom(para)
     # elif name == 'BPR':
     #     algo = tf.BPR(para)
     #elif name == 'ALS': #ALS = ALS, implizit
