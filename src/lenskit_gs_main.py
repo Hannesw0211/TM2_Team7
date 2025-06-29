@@ -7,7 +7,12 @@ Created on Fri Jun 18 16:08:45 2021
 lenskit_gs_main.py
 Functions: evaluate_pred, evaluate_rec, final_plot, main_rmse, main
 """
-
+import os
+import random
+import numpy as np
+os.environ['PYTHONHASHSEED'] = '42'
+random.seed(42)
+np.random.seed(42)
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -20,7 +25,6 @@ from lenskit.metrics.predict import rmse, mae
 from lenskit.crossfold import partition_users, LastFrac
 from utils import read_dataset, get_grid
 from gridsearch import gs, gs_rmse, get_algo
-import os
 from lenskit.algorithms import Recommender
 from lenskit.util import clone
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -110,7 +114,7 @@ def main_rmse(dataset):
 
 
 def main(dataset):
-    names = ['Pop'] #'Bias', 'II', 'UU', 'BiasedMF', 'SVD', 'Pop', 'NMF', 'Random', 'SlopeOne', 'PMF'
+    names = ['Bias', 'II', 'UU', 'BiasedMF', 'SVD', 'Pop'] #'Bias', 'II', 'UU', 'BiasedMF', 'SVD', 'Pop', 'NMF', 'Random', 'SlopeOne', 'PMF'
     # names = ['Bias']
     # Addition of 'Frac' (see below): only using fraction of dataset for faster development/testing
     #     Set frac=None for full dataset (for final evaluation), e.g., frac=0.01 for 1% sample (for debugging)
@@ -169,8 +173,8 @@ if __name__ == "__main__":
 
     print("Current working directory:", os.getcwd())
 
-    # available datasets: 'movie-tweetings', 'librarything' ,'amazon-electronics', 'amazon-instantvideo', 'ML-1M', 'modcloth', 'amazon-magazine'
-    dataset = 'amazon-magazine'
+    # available datasets: 'movie-tweetings', 'librarything' ,'amazon-electronics', 'amazon-instantvideo''amazon-instantvideo', 'ML-1M', 'modcloth', 'amazon-magazine'
+    dataset = 'amazon-instantvideo'
 
     # Haupt-Evaluation (NDCG/Recall)
     # NDCG Range: 0 to 1
